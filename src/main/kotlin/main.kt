@@ -38,7 +38,7 @@ fun main() {
         }
 
         // Schleife beenden, wenn 'q' gedrückt wird
-        if (waitKey(30) == 'q'.toInt()) {
+        if (waitKey(30) == 'q'.code) {
             break
         }
     }
