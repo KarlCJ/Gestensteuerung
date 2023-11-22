@@ -1,49 +1,30 @@
-import org.bytedeco.opencv.global.opencv_imgproc.*
-import org.bytedeco.opencv.global.opencv_highgui.*
-import org.bytedeco.opencv.opencv_core.*
-import org.bytedeco.opencv.opencv_videoio.VideoCapture
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 fun main() {
-    // Kamera initialisieren
-    val capture = VideoCapture(0)
-    if (!capture.isOpened) {
-        println("Kamera konnte nicht geöffnet werden.")
-        return
+    try {
+        // Pfad zum Python-Skript
+        val pythonScriptPath = "src/main/python/gestureRecongnition.py"
+
+        // Starten des Python-Skripts als externen Prozess
+        val process = Runtime.getRuntime().exec("python $pythonScriptPath")
+
+        // Lesen der Standard- und Fehlerausgabe des Python-Skripts
+        val stdInput = BufferedReader(InputStreamReader(process.inputStream))
+        val stdError = BufferedReader(InputStreamReader(process.errorStream))
+
+        // Ausgabe der Standardausgabe
+        println("Standardausgabe:")
+        stdInput.forEachLine { println(it) }
+
+        // Ausgabe der Fehlerausgabe
+        println("Fehlerausgabe:")
+        stdError.forEachLine { println(it) }
+
+        // Warten, bis der Prozess beendet ist
+        process.waitFor()
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
-
-    // Fenster für die Anzeige erstellen
-    namedWindow("Webcam")
-
-    // Frame-Objekt für das Einlesen der Bilder
-    val frame = Mat()
-    val zoomedFrame = Mat()
-
-    while (true) {
-        // Bild von der Kamera einlesen
-        capture.read(frame)
-        if (!frame.empty()) {
-            // Zoom anwenden
-            val center = Point(frame.cols() / 2, frame.rows() / 2)
-            val newSize = Size(frame.cols() / 2, frame.rows() / 2)
-            val roi = Rect(center.x() - newSize.width() / 2, center.y() - newSize.height() / 2, newSize.width(), newSize.height())
-
-            // Bild beschneiden und skalieren
-            resize(frame.apply(roi), zoomedFrame, frame.size())
-
-            // Bild anzeigen
-            imshow("Webcam", zoomedFrame)
-        } else {
-            println("Kein Frame erfasst.")
-            break
-        }
-
-        // Schleife beenden, wenn 'q' gedrückt wird
-        if (waitKey(30) == 'q'.code) {
-            break
-        }
-    }
-
-    // Ressourcen freigeben
-    capture.release()
-    destroyAllWindows()
 }
+
