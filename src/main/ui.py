@@ -62,7 +62,7 @@ class RoundButton(QPushButton):
             painter.setBrush(QBrush(QColor(30, 144, 255, int(128 * self.hover_progress))))  # Hellblau mit Transparenz
             painter.setPen(Qt.NoPen)
             radius = int(self.width() / 2 * self.hover_progress)
-            painter.drawEllipse(self.width() / 2 - radius, self.height() / 2 - radius, radius * 2, radius * 2)
+            painter.drawEllipse(self.width() // 2 - radius, self.height() // 2 - radius, radius * 2, radius * 2)
 
     def enterEvent(self, event):
         self.hover_timer.start(40)  # Du kannst hier ein anderes Intervall einstellen, falls nötig
