@@ -2,12 +2,13 @@ import sys
 import cv2
 import mediapipe as mp
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton
-from PyQt5.QtGui import QImage, QPixmap, QPainter, QColor, QBrush
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QImage, QPixmap, QPainter, QColor, QBrush, QIcon, QPainterPath
+from PyQt5.QtCore import Qt, QTimer, QSize
+
 width = 800
 height = 600
 class RoundButton(QPushButton):
-    def __init__(self, parent=None, hover_callback=None):
+    def __init__(self, parent=None, hover_callback=None, icon_path=None):
         super().__init__(parent)
         self.setFixedSize(60, 60)
         self.animation_duration = 1500  # Gesamtdauer der Animation in Millisekunden
@@ -15,6 +16,11 @@ class RoundButton(QPushButton):
         self.hover_progress = 0
         self.hover_timer.timeout.connect(self.update_hover_progress)
         self.hover_callback = hover_callback
+
+        # Icon hinzufügen, falls ein Pfad angegeben wurde
+        if icon_path:
+            self.setIcon(QIcon(icon_path))
+            self.setIconSize(QSize(40, 40))  # Größe des Icons anpassen
 
     def contains_point(self, x, y):
         # Überprüfen, ob der Punkt (x, y) innerhalb des Buttons liegt
@@ -56,6 +62,11 @@ class RoundButton(QPushButton):
         painter.setBrush(QBrush(QColor(200, 200, 200, 128)))  # Grauer Hintergrund
         painter.setPen(Qt.NoPen)
         painter.drawEllipse(0, 0, self.width(), self.height())
+        button_rect=self.rect()
+        # Zeichne das Icon
+        if self.icon():
+            icon_rect = button_rect.adjusted(10, 10, -10, -10)  # Hier kannst du die Größe des Icons anpassen
+            self.icon().paint(painter, icon_rect, Qt.AlignCenter)
 
         # Heller blauer Hover-Effekt
         if self.hover_progress > 0:
@@ -91,24 +102,53 @@ class CameraWidget(QWidget):
         self.timer.timeout.connect(self.update_image)
         self.cap = cv2.VideoCapture(0)
 
-        self.button1 = RoundButton(self, hover_callback=lambda:print("Button 1 Aktiviert"))
-        self.button1.move(self.button1.height()//3, self.button1.height()//3)
-        self.button2 = RoundButton(self,hover_callback=lambda:print("Button 2 Aktiviert"))
-        self.button2.move(width-self.button2.height()-(self.button2.height()//3), self.button2.height()//3)
+        self.is_blurred = False  # Zustandsvariable für Blur-Status
+
+
+        # Buttons Links
+        self.volUpButton = RoundButton(self, hover_callback=lambda:print("Volume Up"), icon_path="../GUI/images/volume-max-svgrepo-com.png")
+        self.volUpButton.move(self.volUpButton.height() // 3, self.volUpButton.height() // 3)
+        self.volDownButton = RoundButton(self, hover_callback=lambda: print("Volume Down"), icon_path="../GUI/images/volume-min-svgrepo-com.png")
+        self.volDownButton.move(self.volDownButton.height() // 3, self.volDownButton.height() // 3 + self.volDownButton.height()+self.volDownButton.height()//3)
+        self.muteButton = RoundButton(self, hover_callback=lambda: print("Muted"), icon_path="../GUI/images/volume-xmark-svgrepo-com.png")
+        self.muteButton.move(self.muteButton.height() // 3, self.muteButton.height() // 3 + (self.muteButton.height() + self.muteButton.height() // 3)*2)
+
+        # Buttons Rechts
+        self.endCallButton = RoundButton(self, hover_callback=lambda:print("End Call"), icon_path="../GUI/images/call-cancel-svgrepo-com.png")
+        self.endCallButton.move(width - self.endCallButton.height() - (self.endCallButton.height() // 3), self.endCallButton.height() // 3)
+
+        self.blurButton = RoundButton(self, hover_callback=lambda: self.toggle_blur(), icon_path="../GUI/images/blur-svgrepo-com.png")
+        self.blurButton.move(width - self.blurButton.height() - (self.blurButton.height() // 3), self.blurButton.height() // 3+ self.muteButton.height() + self.muteButton.height() // 3)
+
+        self.gameButton = RoundButton(self, hover_callback=lambda: print("Gamingtime"), icon_path="../GUI/images/controller-svgrepo-com.png")
+        self.gameButton.move(width - self.gameButton.height() - (self.gameButton.height() // 3), self.gameButton.height() // 3 + (self.muteButton.height() + self.muteButton.height() // 3)*2)
 
 
 
     def start(self):
         self.timer.start(30)
 
+    def toggle_blur(self):
+        # Umschalten des Blur-Status
+        self.is_blurred = not self.is_blurred
+
     def update_image(self):
         ret, frame = self.cap.read()
         if ret:
+            # Spiegle das Bild, um eine natürlichere Interaktion zu ermöglichen
             frame = cv2.flip(frame, 1)
+
+            # Verarbeite das Frame für die Handerkennung
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = self.hands.process(frame_rgb)
-            button1_hovered = False
-            button2_hovered = False
+
+            # Initialisiere Hover-Status für jeden Button
+            vol_up_button_hovered = False
+            vol_down_button_hovered = False
+            mute_button_hovered = False
+            end_call_button_hovered = False
+            blur_button_hovered = False
+            game_button_hovered = False
 
             if results.multi_hand_landmarks:
                 for hand_landmarks in results.multi_hand_landmarks:
@@ -124,16 +164,37 @@ class CameraWidget(QWidget):
                             if pixelCoordinatesLandmark:
                                 x, y = pixelCoordinatesLandmark
                                 # Überprüfe die Kollision mit Buttons
-                                if self.button1.contains_point(x, y):
-                                    button1_hovered = True
-                                if self.button2.contains_point(x, y):
-                                    button2_hovered = True
-                # Aktualisiere den Hover-Status der Buttons basierend auf der Fingerposition
-            self.button1.update_hover_status(button1_hovered)
-            self.button2.update_hover_status(button2_hovered)
+                                if self.volUpButton.contains_point(x, y):
+                                    vol_up_button_hovered = True
+                                if self.volDownButton.contains_point(x, y):
+                                    vol_down_button_hovered = True
+                                if self.muteButton.contains_point(x, y):
+                                    mute_button_hovered = True
+                                if self.endCallButton.contains_point(x, y):
+                                    end_call_button_hovered = True
+                                if self.blurButton.contains_point(x, y):
+                                    blur_button_hovered = True
+                                if self.gameButton.contains_point(x, y):
+                                    game_button_hovered = True
 
-            frame = cv2.resize(frame, (width, height))
-            image = QImage(frame.data, frame.shape[1], frame.shape[0], QImage.Format_BGR888)
+            # Aktualisiere den Hover-Status der Buttons basierend auf der Fingerposition
+            self.volUpButton.update_hover_status(vol_up_button_hovered)
+            self.volDownButton.update_hover_status(vol_down_button_hovered)
+            self.muteButton.update_hover_status(mute_button_hovered)
+            self.endCallButton.update_hover_status(end_call_button_hovered)
+            self.blurButton.update_hover_status(blur_button_hovered)
+            self.gameButton.update_hover_status(game_button_hovered)
+
+            # Erstelle eine Kopie des Frames für die Anzeige
+            display_frame = frame.copy()
+
+            # Wende den Blur-Effekt auf die Kopie an, falls aktiviert
+            if self.is_blurred:
+                display_frame = cv2.GaussianBlur(display_frame, (81, 81), 0)
+
+            # Konvertiere das Display-Frame in ein QImage und setze es in das QLabel
+            display_frame = cv2.resize(display_frame, (width, height))
+            image = QImage(display_frame.data, display_frame.shape[1], display_frame.shape[0], QImage.Format_BGR888)
             self.image_label.setPixmap(QPixmap.fromImage(image))
 
 
