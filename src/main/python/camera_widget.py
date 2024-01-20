@@ -6,6 +6,7 @@ from PyQt5.QtCore import QTimer
 from constants import WIDTH, HEIGHT
 from round_button import RoundButton
 import helpers
+from game_menu_widget import GamesMenuWidget
 
 class CameraWidget(QWidget):
     def __init__(self, parent=None):
@@ -50,8 +51,16 @@ class CameraWidget(QWidget):
         self.blurButton = RoundButton(self, hover_callback=lambda: self.toggle_blur(), icon_path="../GUI/images/blur-svgrepo-com.png")
         self.blurButton.move(WIDTH - self.blurButton.height() - (self.blurButton.height() // 3), self.blurButton.height() // 3 + self.muteButton.height() + self.muteButton.height() // 3)
 
-        self.gameButton = RoundButton(self, hover_callback=lambda: print("Gamingtime"), icon_path="../GUI/images/controller-svgrepo-com.png")
+        self.gameButton = RoundButton(self, hover_callback=lambda :self.toggle_games_menu(), icon_path="../GUI/images/controller-svgrepo-com.png")
         self.gameButton.move(WIDTH - self.gameButton.height() - (self.gameButton.height() // 3), self.gameButton.height() // 3 + (self.muteButton.height() + self.muteButton.height() // 3) * 2)
+
+        self.closeMenuButton = RoundButton(self, hover_callback=self.toggle_games_menu, icon_path="../GUI/images/return-button-svgrepo-com.png")
+        self.closeMenuButton.move(self.closeMenuButton.height()//3, self.closeMenuButton.height()//3)  # Position des Buttons anpassen
+        self.closeMenuButton.hide()  # Anfangs versteckt
+
+        self.gamesMenuWidget = GamesMenuWidget(self)  # Spiele-Menü-Widget erstellen
+        self.gamesMenuWidget.setGeometry(100, 100, 300, 400)  # Position und Größe des Menüs
+        self.gamesMenuWidget.setVisible(False)
 
         # Button-Status-Dictionary
         self.buttons = {
@@ -61,7 +70,26 @@ class CameraWidget(QWidget):
             'end_call': (self.endCallButton, False),
             'blur': (self.blurButton, False),
             'game': (self.gameButton, False),
+            'back': (self.closeMenuButton,False)
         }
+
+    def toggle_games_menu(self):
+        if self.gamesMenuWidget.isVisible():
+            self.gamesMenuWidget.hide()
+            self.toggle_buttons_visibility(True)  # Ursprüngliche Buttons anzeigen
+            self.closeMenuButton.hide()
+        else:
+            self.gamesMenuWidget.show()
+            self.toggle_buttons_visibility(False)  # Ursprüngliche Buttons verstecken
+            self.closeMenuButton.show()
+
+    def toggle_buttons_visibility(self, visible):
+        self.volUpButton.setVisible(visible)
+        self.volDownButton.setVisible(visible)
+        self.muteButton.setVisible(visible)
+        self.endCallButton.setVisible(visible)
+        self.blurButton.setVisible(visible)
+        self.gameButton.setVisible(visible)
 
     def start(self):
         self.timer.start(30)
@@ -101,10 +129,22 @@ class CameraWidget(QWidget):
 
                     if pixelCoordinatesLandmark:
                         x, y = pixelCoordinatesLandmark
-                        finger_over_button = self.update_button_hover_status(x, y)
+                        if self.gamesMenuWidget.isVisible():
+                            # Überprüfe nur den closeMenuButton, wenn das Spiele-Menü sichtbar ist
+                            finger_over_button = self.update_single_button_hover_status(self.closeMenuButton, x, y)
+                        else:
+                            # Überprüfe alle anderen Buttons, wenn das Spiele-Menü nicht sichtbar ist
+                            finger_over_button = self.update_button_hover_status(x, y)
 
         if not finger_over_button:
             self.reset_buttons_hover_status()
+
+    def update_single_button_hover_status(self, button, x, y):
+        if button.contains_point(x, y):
+            if not button.hover_timer.isActive():
+                button.start_hover_animation()
+            return True
+        return False
 
     def update_button_hover_status(self, x, y):
         for key, (button, hovered) in self.buttons.items():

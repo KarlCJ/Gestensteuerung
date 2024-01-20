@@ -6,7 +6,7 @@ class RoundButton(QPushButton):
     def __init__(self, parent=None, hover_callback=None, icon_path=None):
         super().__init__(parent)
         self.setFixedSize(60, 60)
-        self.animation_duration = 1500  # Gesamtdauer der Animation in Millisekunden
+        self.animation_duration = 1000  # Gesamtdauer der Animation in Millisekunden
         self.hover_timer = QTimer(self)
         self.hover_progress = 0
         self.hover_timer.timeout.connect(self.update_hover_progress)
