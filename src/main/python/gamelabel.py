@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QFrame, QHBoxLayout, QLabel
 from PyQt5.QtCore import Qt, QSize
 
-from src.main.python.round_button import RoundButton
+from round_button import RoundButton
 
 
 class GameLabel(QFrame):
