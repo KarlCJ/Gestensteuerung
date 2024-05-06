@@ -2,8 +2,8 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QScrollArea, QHBo
     QListWidget, QApplication
 from PyQt5.QtCore import Qt
 
-from Gestensteuerung.src.main.python.constants import WIDTH, HEIGHT
-from Gestensteuerung.src.main.python.tictactoe_widget import TicTacToeWidget
+from src.main.python.constants import WIDTH, HEIGHT
+from src.main.python.tictactoe_widget import TicTacToeWidget
 from gamelabel import GameLabel
 
 

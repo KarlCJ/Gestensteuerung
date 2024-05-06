@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QVBoxLayout, QLab
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFont
 
-from Gestensteuerung.src.main.python.constants import WIDTH, HEIGHT, TICTACTOE_SIZE
+from src.main.python.constants import WIDTH, HEIGHT, TICTACTOE_SIZE
 
 
 class GameLabel(QFrame):
@@ -37,7 +37,7 @@ class TicTacToeWidget(QWidget):
         for row in range(3):
             for col in range(3):
                 button = QPushButton(' ')
-                button.setFixedSize(TICTACTOE_SIZE/3, TICTACTOE_SIZE/3)
+                button.setFixedSize(TICTACTOE_SIZE//3, TICTACTOE_SIZE//3)
                 button.setFont(QFont('Arial', 24))
                 button.setStyleSheet("background-color: rgba(255, 255, 255, 150)")
                 self.gridLayout.addWidget(button, row, col)

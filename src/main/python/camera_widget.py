@@ -12,7 +12,7 @@ from game_menu_widget import GamesMenuWidget
 
 
 class CameraWidget(QWidget):
-    def __init__(self, parent=None, peer_ip='tcp://localhost:5556'):
+    def __init__(self, parent=None, peer_ip='tcp://139.6.215.77:5555'):
         super().__init__(parent)
         self.is_blurred = False  # Zustandsvariable für Blur-Status
         self.setup_ui()
@@ -35,14 +35,14 @@ class CameraWidget(QWidget):
     def setup_zmq(self, peer_ip):
         self.context = zmq.Context()
         self.pub_socket = self.context.socket(zmq.PUB)
-        self.pub_socket.bind('tcp://*:5555')  # Dieser Peer bindet auf Port 5555
+        self.pub_socket.bind('tcp://*:5556')  # Dieser Peer bindet auf Port 5555
         self.sub_socket = self.context.socket(zmq.SUB)
         self.sub_socket.connect(peer_ip)  # Verbindet zum anderen Peer
         self.sub_socket.setsockopt_string(zmq.SUBSCRIBE, '')
 
     def setup_timer(self):
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_image)  # Fix: do not call the method, just reference it
+        # self.timer.timeout.connect(self.update_image)  # Fix: do not call the method, just reference it
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(30)  # Start the timer to update frame every 30 ms
 

@@ -16,6 +16,6 @@ class MainWindow(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = CameraWidget(peer_ip='tcp://localhost:5556')
+    window = CameraWidget(peer_ip='tcp://139.6.215.77:5555')
     window.show()
     sys.exit(app.exec_())
