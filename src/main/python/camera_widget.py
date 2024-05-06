@@ -119,8 +119,10 @@ class CameraWidget(QWidget):
         self.closeMenuButton.hide()  # Anfangs versteckt
 
         self.gamesMenuWidget = GamesMenuWidget(self)  # Spiele-Menü-Widget erstellen
-        self.gamesMenuWidget.setGeometry(100, 100, 300, 400)  # Position und Größe des Menüs
+        self.gamesMenuWidget.setGeometry(0, 0, WIDTH, HEIGHT)  # Position und Größe des Menüs
         self.gamesMenuWidget.setVisible(False)
+
+        #Buttons im GamesMenu
 
         # Button-Status-Dictionary
         self.buttons = {
@@ -193,6 +195,7 @@ class CameraWidget(QWidget):
                         if self.gamesMenuWidget.isVisible():
                             # Überprüfe nur den closeMenuButton, wenn das Spiele-Menü sichtbar ist
                             finger_over_button = self.update_single_button_hover_status(self.closeMenuButton, x, y)
+
                         else:
                             # Überprüfe alle anderen Buttons, wenn das Spiele-Menü nicht sichtbar ist
                             finger_over_button = self.update_button_hover_status(x, y)
