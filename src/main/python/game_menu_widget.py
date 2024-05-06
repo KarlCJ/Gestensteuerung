@@ -1,10 +1,11 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QScrollArea, QHBoxLayout, QLabel, QListWidgetItem, \
-    QListWidget
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QColor
+    QListWidget, QApplication
+from PyQt5.QtCore import Qt
 
-from src.main.python.gamelabel import GameLabel
-from src.main.python.round_button import RoundButton
+from Gestensteuerung.src.main.python.constants import WIDTH, HEIGHT
+from Gestensteuerung.src.main.python.tictactoe_widget import TicTacToeWidget
+from gamelabel import GameLabel
+
 
 
 class GamesMenuWidget(QWidget):
@@ -12,9 +13,13 @@ class GamesMenuWidget(QWidget):
         super().__init__(parent, Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setup_ui()
 
+
     def setup_ui(self):
-        self.setLayout(QVBoxLayout())
+        layout= QVBoxLayout()
+        layout.setContentsMargins(WIDTH//3, 100, 100, 100)
+        self.setLayout(layout)
         self.setWindowOpacity(0.8)  # Halbtransparent
+
 
         # Verwende QListWidget für die Spieleliste
         self.gamesList = QListWidget()
@@ -40,11 +45,18 @@ class GamesMenuWidget(QWidget):
         self.gamesList.addItem(item)
         self.gamesList.setItemWidget(item, game_label)
 
+
+
     def on_tic_tac_toe_clicked(self):
-        print("TicTacToe ausgewählt")
+        self.ticTacToeWidget = TicTacToeWidget()
+        self.layout().addWidget(self.ticTacToeWidget)
+        self.ticTacToeWidget.show()
 
     def toggle_visibility(self):
         if self.isVisible():
             self.hide()
         else:
             self.show()
+
+
+
